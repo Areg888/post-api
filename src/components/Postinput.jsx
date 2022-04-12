@@ -1,103 +1,78 @@
 import React, { useState } from "react";
-import axios from "axios";
-import FormData from "form-data";
 
-const Postinput = () => {
-  const [data, setData] = useState({
-    firstName: "",
-    lastName: "",
-    birthDay: "",
-    gender: "",
-    photo: "",
-    pdf: "",
-  });
+export const Postinput = () => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [birthDay, setBirthDay] = useState("");
+  const [gender, setGender] = useState("");
 
-  function submit(e) {
+  let handleSubmit = async (e) => {
     e.preventDefault();
 
-    let formdata = new FormData();
+    const photoInput = document.querySelector("#photo");
+    const pdfInput = document.querySelector("#pdf");
+    let formData = new FormData();
+    formData.append("photo", photoInput.files[0], photoInput.files[0].name);
+    formData.append("pdfFile", pdfInput.files[0], pdfInput.files[0].name);
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    formData.append("birthDay", birthDay);
+    formData.append("gender", gender);
 
-    formdata.append("firstName", data.firstName);
-    formdata.append("lastName", data.lastName);
-    formdata.append("yyyy-MM-dd", data.birthDay);
-    formdata.append("gender", data.gender);
-    formdata.append("photo", data.photo);
-    formdata.append("pdf", data.pdf);
+    let requestOptions = {
+      method: "POST",
+      body: formData,
+    };
 
-    axios({
-      method: "post",
-      url: "http://intern-2022.arpify.com/form",
-      data: formdata,
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-      .then((res) => {
-        console.log(res.data);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  }
-
-  function handle(e) {
-    const newdata = { ...data };
-    newdata[e.target.id] = e.target.value;
-    setData(newdata);
-    console.log(newdata);
-  }
-
-  const handleInputChange = (e) => {
-    const newdata = {...data}
-    newdata[e.target.id] = e.target.files[0];
-    setData(newdata);
+    fetch("http://intern-2022.arpify.com/form", requestOptions)
+      .then((response) => response.text())
+      .then((result) => console.log(result))
+      .catch((error) => console.log("error", error));
   };
-
   return (
-    <div>
-      <form onSubmit={(e) => submit(e)}>
-        <input
-          onChange={(e) => handle(e)}
-          id="firstName"
-          value={data.firstName}
-          type="text"
-        />
-        <input
-          onChange={(e) => handle(e)}
-          id="lastName"
-          value={data.lastName}
-          type="text"
-        />
-        <input
-          onChange={(e) => handle(e)}
-          id="birthDay"
-          value={data.birthDay}
-          type="date"
-        />
-        <input
-          onChange={(e) => handle(e)}
-          type="radio"
-          id="gender"
-          value="male"
-        />{" "}
-        Male
-        <input
-          onChange={(e) => handle(e)}
-          type="radio"
-          id="gender"
-          value="female"
-        />{" "}
-        Female
-        <input onChange={(e) => handleInputChange(e)} type="file" id="img" />
-        <input
-          onChange={(e) => handleInputChange(e)}
-          type="file"
-          name="Upload"
-          accept="application/pdf"
-          id="pdf"
-        />
-        <button>Submit</button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+        placeholder="First name"
+        type="text"
+        name="firstName"
+        required
+      />
+      <input
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+        placeholder="Last name"
+        type="text"
+        name="lastName"
+        required
+      />
+      <input
+        value={birthDay}
+        onChange={(e) => setBirthDay(e.target.value)}
+        placeholder="birthDay"
+        type="date"
+        name="date"
+        required
+      />
+      <input
+        value={gender}
+        onChange={(e) => setGender(e.target.value)}
+        placeholder="gender"
+        type="text"
+        name="text"
+        required
+      />
+
+      <input type="file" name="photo" id="photo" accept=".jpg,.jpeg, png" />
+      <input
+        style={{ cursor: "pointer", padding: "10px" }}
+        type="file"
+        id="pdf"
+        name="pdfFile"
+        accept=".pdf"
+      />
+      <button type="submit">Submit</button>
+    </form>
   );
 };
-
-export default Postinput;
